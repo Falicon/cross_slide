@@ -11,6 +11,7 @@ A new Flutter project for the flutter hack dev post challenge.
     - last slot is white space (for sliding)
     - initial state has row or column correct (and fills in rest of grid with extra letters)
     - sort slides pieces around in random order for X amount of slides (determined by level?)
+
     - a character in the wrong slot has a white background
     - a character in the right row or column (whichever is the solve direction) but wrong slot will have yellow background
     - a character in the right slot will have a green background

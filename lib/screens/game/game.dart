@@ -14,7 +14,8 @@ TODO
 
   - fill boxes with letters not in solution (limit repeat letters)?
 
-  - Game instructions/rules/stats below puzzle
+  - Game stats below puzzle? (clicks; timer; level; list of solved)
+  - play sound on click (during animation)
 
   - settings?
   - hints?
@@ -115,12 +116,12 @@ class _GameState extends State<Game> {
         _solve_direction = 'across';
         // pick a random row user needs to solve for (never last row b/c of empty space)
         _solve_slot = new Random().nextInt(_row_count.toInt() - 1);
-        _clue = (_solve_slot + 1).toString() + ' accross: ' + _clue;
+        _clue = (_solve_slot + 1).toString() + ' Accross: ' + _clue;
       } else {
         _solve_direction = 'down';
         // pick a random column user needs to solve for (never last column b/c of empty space)
         _solve_slot = new Random().nextInt(_column_count.toInt() - 1);
-        _clue = (_solve_slot + 1).toString() + ' down: ' + _clue;
+        _clue = (_solve_slot + 1).toString() + ' Down: ' + _clue;
       }
       _clue += '\n';
 
@@ -451,9 +452,10 @@ class _GameState extends State<Game> {
 
   /****************************************
   SHUFFLE BOXES
+    - Generate 50 random-ish clicks to mix up the puzzle
   ****************************************/
   void _shuffle_boxes() {
-    for (var x = 0; x < 100; x++) {
+    for (var x = 0; x < 50; x++) {
       // randomly decide between clicking a row or a column
       int _choice = new Random().nextInt(2);
       int _row = _empty_slot[0];
@@ -504,7 +506,7 @@ class _GameState extends State<Game> {
                   ),
                   // color: _boxes[_row][_column]['background'],
                   decoration: BoxDecoration(
-                    border: Border.all(color: Color(0xffececec)),
+                    border: Border.all(color: Color(0xff6c757d)),
                     borderRadius: BorderRadius.circular(2),
                     color: _boxes[_row][_column]['background']
                   ),
@@ -566,6 +568,41 @@ class _GameState extends State<Game> {
               width: _game_size.toDouble(), //MediaQuery.of(context).size.width,
               child: Stack(
                 children: _buildBoxes()
+              )
+            )
+          ),
+          Container(
+            alignment: Alignment.topCenter,
+            padding: EdgeInsets.fromLTRB(150.0, 10.0, 150.0, 0.0),
+            child: Container(
+              padding: EdgeInsets.fromLTRB(10.0, 15.0, 10.0, 15.0),
+              decoration: BoxDecoration(
+                color: Color(0xfffbfcc7),
+                borderRadius: BorderRadius.all(Radius.circular(10)),
+                border: Border.all(
+                  width: 3,
+                  color: Color(0xff6c757d),
+                  style: BorderStyle.solid
+                )
+              ),
+              child: Column(
+                children: [
+                  Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: 'How To Play:\n\n1. Tap or Click a letter to slide boxes around the puzzle.\n\n2. Spell the word that is the answer to the clue given.\n\n3. Make sure it\'s in the right column or row as defined by the clue.\n\n4. Difficulty increases with very 5 puzzles you solve.\n\nNote: Green boxes are letters in the right spot, yellow boxes are letters in the answer, but in the wrong spot.',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xff6c757d),
+                            // fontSize: 25
+                          )
+                        ),
+                      ]
+                    ),
+                    // textAlign: TextAlign.center
+                  ),
+                ]
               )
             )
           )
