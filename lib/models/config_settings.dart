@@ -1,7 +1,7 @@
 // GLOBAL CONFIGURATION VALUES
 // const api_domain = 'http://localhost:8001';
 
-words = {
+Map<String, dynamic> words = {
   "sun": "The Earth revolves around it.",
   "ant": "A small insect, often found in a hill or colony.",
   "map": "A representation of an area of land.",
@@ -17,4 +17,4 @@ words = {
   "magic": "Mysterious tricks, performed as entertainment.",
   "river": "A flowing body of water.",
   "third": "Place after second."
-}
+};
