@@ -6,15 +6,16 @@ import 'package:cross_slide/models/config_settings.dart';
 
 /**********
 TODO
-  - solve across or down
-  - force specific row or column for solve
-  - highlight when a correct letter is in proper row/slot (but wrong position)
-  - dynamic board/box size
   - game over message
+  - number the grid (for across/down help)
+
   - timer (for speed solutions)
   - click count (for fewest clicks)
-  - potentially shuffle complexity based on the level
+
   - fill boxes with letters not in solution (limit repeat letters)?
+
+  - Game instructions/rules/stats below puzzle
+
   - settings?
   - hints?
 **********/
@@ -44,14 +45,16 @@ class _GameState extends State<Game> {
   int _level = 0;
   int _solve_slot = 0;
 
-  double _box_size = 50.0;
-  double _padding = 5.0;
-  double _column_count = 0;
-  double _game_size = 400.0;
-  double _row_count = 0;
+  int _box_size = 50;
+  int _padding = 5;
+  int _column_count = 0;
+  int _game_size = 400;
+
+  int _row_count = 0;
 
   String _word = '';
   String _clue = '';
+  String _solve_direction = '';
 
   Map _letter_mappings = {};
   Map<String, dynamic> _words = words;
@@ -96,15 +99,32 @@ class _GameState extends State<Game> {
       _word = _random_key.toUpperCase();
       _clue = _words[_random_key.toLowerCase()]['clue'];
 
+      // calculate the _game_size (game board size)
+      _game_size = (_box_size + _padding) * _word.length;
+
       // set the size of our playing grid
-      _column_count = _word.length.toDouble();
-      _row_count = _word.length.toDouble();
+      _column_count = _word.length;
+      _row_count = _word.length;
 
       // define the initial empty slot (last row; last character)
       _empty_slot = [_row_count - 1, _column_count - 1];
 
-      // pick a random row user needs to solve for (never last row b/c of empty space)
-      _solve_slot = new Random().nextInt(_row_count.toInt() - 1);
+      // determine if solution should be across or down (and in what slot)
+      int _temp = new Random().nextInt(2);
+      if (_temp == 0) {
+        _solve_direction = 'across';
+        // pick a random row user needs to solve for (never last row b/c of empty space)
+        _solve_slot = new Random().nextInt(_row_count.toInt() - 1);
+        _clue = (_solve_slot + 1).toString() + ' accross: ' + _clue;
+      } else {
+        _solve_direction = 'down';
+        // pick a random column user needs to solve for (never last column b/c of empty space)
+        _solve_slot = new Random().nextInt(_column_count.toInt() - 1);
+        _clue = (_solve_slot + 1).toString() + ' down: ' + _clue;
+      }
+      _clue += '\n';
+
+      // initialize our spots for the grid
       double _top = 0.0;
       double _left = 0.0;
 
@@ -306,72 +326,126 @@ class _GameState extends State<Game> {
   CHECK SOLUTION
   ****************************************/
   void _check_solution() {
-    // check if the proper letters are in the correct slots
-    for (var i = 0; i < _controls.length; i++) {
-      String _check = '';
-      for (var j = 0; j < _controls[i].length; j++) {
-        _check += _letter_mappings[_controls[i][j]];
-      }
-      if (_check == _word) {
-        _solved.add(_word);
+    bool _correct = false;
+    List _greens = [];
+    List _yellows = [];
 
-        // turn proper boxes green
-        for (var j = 0; j < _controls[i].length; j++) {
-          for (var x = 0; x < _boxes.length; x++) {
-            for (var y = 0; y < _boxes[x].length; y++) {
-              if (_boxes[x][y]['id'] == _controls[i][j]) {
-                _boxes[x][y]['background'] = Colors.green;
-                _boxes[x][y]['foreground'] = Colors.white;
-              }
+    if (_solve_direction == 'across') {
+
+      // check if the proper letters are in the correct slots within this row
+      // build a word from the characters in the solve slots
+      String _check = '';
+      for (var i = 0; i < _controls.length; i++) {
+        _check += _letter_mappings[_controls[_solve_slot][i]];
+        // check if right letter; right spot
+        if (_word[i] == _letter_mappings[_controls[_solve_slot][i]]) {
+          _greens.add(_controls[_solve_slot][i]);
+        }
+        // check if right letter; wrong spot
+        if (_word.contains(_letter_mappings[_controls[_solve_slot][i]])) {
+          _yellows.add(_controls[_solve_slot][i]);
+        }
+      }
+      // check that word against what we are looking for
+      if (_check == _word) {
+        _correct = true;
+        _solved.add(_word);
+      }
+
+    } else {
+
+      // check if the proper letters are in the correct slots within this column
+      // build a word from the characters in the solve slots
+      String _check = '';
+      for (var i = 0; i < _controls.length; i++) {
+        _check += _letter_mappings[_controls[i][_solve_slot]];
+        // check if right letter; right spot
+        if (_word[i] == _letter_mappings[_controls[i][_solve_slot]]) {
+          _greens.add(_controls[i][_solve_slot]);
+        }
+        // check if right letter; wrong spot
+        if (_word.contains(_letter_mappings[_controls[i][_solve_slot]])) {
+          _yellows.add(_controls[i][_solve_slot]);
+        }
+      }
+      // check that word against what we are looking for
+      if (_check == _word) {
+        _correct = true;
+        _solved.add(_word);
+      }
+
+    }
+
+    // turn box colors as needed
+    for (var i = 0; i < _controls.length; i++) {
+      for (var j = 0; j < _controls[i].length; j++) {
+        for (var x = 0; x < _boxes.length; x++) {
+          for (var y = 0; y < _boxes[x].length; y++) {
+            if (_boxes[x][y]['id'] == _controls[i][j] && _greens.contains(_controls[i][j])) {
+              _boxes[x][y]['background'] = Colors.green;
+              _boxes[x][y]['foreground'] = Colors.white;
+            } else if (_boxes[x][y]['id'] == _controls[i][j] && _yellows.contains(_controls[i][j])) {
+              _boxes[x][y]['background'] = Colors.yellow;
+              _boxes[x][y]['foreground'] = Colors.white;
+            } else if (_boxes[x][y]['id'] == _controls[i][j]) {
+              _boxes[x][y]['background'] = Colors.white;
+              _boxes[x][y]['foreground'] = Colors.black;
             }
           }
         }
-
-        // show the popup before moving to next round
-        showDialog(
-          context: context,
-          builder: (BuildContext context) => AlertDialog(
-            title: const Text(
-              'PUZZLE SOLVED!',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Color(0xff6c757d)
-              )
-            ),
-            content: new Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text.rich(
-                  TextSpan(
-                    children: [
-                      TextSpan(
-                        text: 'You have solved ' + _solved.length.toString() + ' puzzles through this game!\n',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xff6c757d)
-                        )
-                      ),
-                    ]
-                  ),
-                )
-              ]
-            ),
-            actions: <Widget>[
-              new FlatButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  // start a new round (with a new puzzle)
-                  _build_puzzle();
-                  setState(() {});
-                },
-                textColor: Theme.of(context).primaryColor,
-                child: const Text('Next'),
-              ),
-            ],
-          )
-        );
       }
+    }
+
+    if (_correct) {
+      // show the popup before moving to next round
+      String _solve_string = 'You have solved ' + _solved.length.toString() + 'puzzle';
+      if (_solved.length != 1) {
+        _solve_string += 's';
+      }
+      _solve_string += ' in this game!\n';
+      showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: const Text(
+            'PUZZLE SOLVED!',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Color(0xff6c757d)
+            )
+          ),
+          content: new Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: _solve_string,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xff6c757d)
+                      )
+                    ),
+                  ]
+                ),
+              )
+            ]
+          ),
+          actions: <Widget>[
+            new FlatButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                // start a new round (with a new puzzle)
+                _build_puzzle();
+                setState(() {});
+              },
+              textColor: Theme.of(context).primaryColor,
+              child: const Text('Next'),
+            ),
+          ],
+        )
+      );
     }
   }
 
@@ -420,6 +494,21 @@ class _GameState extends State<Game> {
               left: _boxes[_row][_column]['left'],
               duration: Duration(milliseconds: _animation_speed),
               child: InkWell(
+                child: Container(
+                  alignment: Alignment.center,
+                  width: _box_size.toDouble(),
+                  height: _box_size.toDouble(),
+                  child: Text(
+                    _boxes[_row][_column]['letter'],
+                    style: TextStyle(color: _boxes[_row][_column]['foreground'])
+                  ),
+                  // color: _boxes[_row][_column]['background'],
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Color(0xffececec)),
+                    borderRadius: BorderRadius.circular(2),
+                    color: _boxes[_row][_column]['background']
+                  ),
+                ),
                 onTap: () {
                   // move the box to the proper spot
                   _change_position(_boxes[_row][_column]['id']);
@@ -427,17 +516,7 @@ class _GameState extends State<Game> {
                   _check_solution();
                   // re-redner the view
                   setState(() { });
-                },
-                child: Container(
-                  alignment: Alignment.center,
-                  width: _box_size,
-                  height: _box_size,
-                  child: Text(
-                    _boxes[_row][_column]['letter'],
-                    style: TextStyle(color: _boxes[_row][_column]['foreground'])
-                  ),
-                  color: _boxes[_row][_column]['background']
-                )
+                }
               )
             )
           );
@@ -469,21 +548,25 @@ class _GameState extends State<Game> {
         padding: const EdgeInsets.all(36),
         children: [
           Container(
+            alignment: Alignment.topCenter,
             padding: const EdgeInsets.all(10),
             child: Text(
               _clue,
               style: TextStyle(
                 color: Color(0xffFFFFFF),
                 fontWeight: FontWeight.bold,
-                fontSize: 25
+                fontSize: 18
               )
-            ),
+            )
           ),
-          SizedBox(
-            height: _game_size,
-            width: _game_size,
-            child: Stack(
-              children: _buildBoxes()
+          Container(
+            alignment: Alignment.topCenter,
+            child: SizedBox(
+              height: _game_size.toDouble(),
+              width: _game_size.toDouble(), //MediaQuery.of(context).size.width,
+              child: Stack(
+                children: _buildBoxes()
+              )
             )
           )
         ]
