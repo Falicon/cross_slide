@@ -4,6 +4,21 @@ import 'package:flutter/material.dart';
 
 import 'package:cross_slide/models/config_settings.dart';
 
+/**********
+TODO
+  - solve across or down
+  - force specific row or column for solve
+  - highlight when a correct letter is in proper row/slot (but wrong position)
+  - dynamic board/box size
+  - game over message
+  - timer (for speed solutions)
+  - click count (for fewest clicks)
+  - potentially shuffle complexity based on the level
+  - fill boxes with letters not in solution (limit repeat letters)?
+  - settings?
+  - hints?
+**********/
+
 // ########################################
 // GAME STATEFUL
 // ########################################
@@ -26,6 +41,7 @@ class _GameState extends State<Game> {
   List _solved = [];
 
   int _animation_speed = 250;
+  int _level = 0;
   int _solve_slot = 0;
 
   double _box_size = 50.0;
@@ -50,14 +66,25 @@ class _GameState extends State<Game> {
   BUILD PUZZLE
   ****************************************/
   void _build_puzzle() {
-    // get the solve word
+    // make sure to clear out any pre-existing values
+    _boxes = [];
+    _controls = [];
+    _word = '';
+    _clue = '';
+
+    // determine the current level (for every 5 solved puzzles we move up a level)
+    if (_solved.length % 5 == 0) {
+      _level++;
+    }
+
+    // get the word set we can build puzzles from
     Iterable _word_set = _words.keys;
 
     List<String> _keys = [];
 
-    // remove the _solved keys
+    // remove the _solved keys (and any words above our current level)
     for (var key in _word_set) {
-      if (!_solved.contains(key.toUpperCase())) {
+      if (!_solved.contains(key.toUpperCase()) && _words[key]['level'] == _level) {
         _keys.add(key.toUpperCase());
       }
     }
@@ -67,7 +94,7 @@ class _GameState extends State<Game> {
       String _random_key = _keys.elementAt(new Random().nextInt(_keys.length));
 
       _word = _random_key.toUpperCase();
-      _clue = _words[_random_key.toLowerCase()];
+      _clue = _words[_random_key.toLowerCase()]['clue'];
 
       // set the size of our playing grid
       _column_count = _word.length.toDouble();
@@ -118,7 +145,7 @@ class _GameState extends State<Game> {
               };
               _letter_mappings[''] = '';
             } else {
-              // TODO generate a random letter (ideally not in solution)
+              // generate a random letter
               num _char_code = 65 + Random().nextInt(91 - 65);
               var _char = new String.fromCharCode(_char_code.toInt());
               _id++;
@@ -277,7 +304,6 @@ class _GameState extends State<Game> {
 
   /****************************************
   CHECK SOLUTION
-  TODO: check that solution is in the right row
   ****************************************/
   void _check_solution() {
     // check if the proper letters are in the correct slots
@@ -288,8 +314,8 @@ class _GameState extends State<Game> {
       }
       if (_check == _word) {
         _solved.add(_word);
-        // print('PUZZLED SOLVED!');
-        // turn boxes in this row to green
+
+        // turn proper boxes green
         for (var j = 0; j < _controls[i].length; j++) {
           for (var x = 0; x < _boxes.length; x++) {
             for (var y = 0; y < _boxes[x].length; y++) {
@@ -300,13 +326,57 @@ class _GameState extends State<Game> {
             }
           }
         }
+
+        // show the popup before moving to next round
+        showDialog(
+          context: context,
+          builder: (BuildContext context) => AlertDialog(
+            title: const Text(
+              'PUZZLE SOLVED!',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Color(0xff6c757d)
+              )
+            ),
+            content: new Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: 'You have solved ' + _solved.length.toString() + ' puzzles through this game!\n',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xff6c757d)
+                        )
+                      ),
+                    ]
+                  ),
+                )
+              ]
+            ),
+            actions: <Widget>[
+              new FlatButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  // start a new round (with a new puzzle)
+                  _build_puzzle();
+                  setState(() {});
+                },
+                textColor: Theme.of(context).primaryColor,
+                child: const Text('Next'),
+              ),
+            ],
+          )
+        );
       }
     }
   }
 
   /****************************************
   SHUFFLE BOXES
-  TODO: potentially shuffle depth based on the level
   ****************************************/
   void _shuffle_boxes() {
     for (var x = 0; x < 100; x++) {
@@ -384,17 +454,30 @@ class _GameState extends State<Game> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Cross Puzzle')
+        title: const Text('CROSSWORD SLIDE PUZZLE'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.info_outline_rounded, color: Color(0xff6c757d)),
+            iconSize: 40,
+            onPressed: () async {
+              Navigator.pushNamed(context, '/about');
+            }
+          )
+        ]
       ),
-      body: Column(
+      body: ListView(
+        padding: const EdgeInsets.all(36),
         children: [
-          Text(
-            _clue,
-            style: TextStyle(
-              color: Color(0xffFFFFFF),
-              fontWeight: FontWeight.bold,
-              fontSize: 25
-            )
+          Container(
+            padding: const EdgeInsets.all(10),
+            child: Text(
+              _clue,
+              style: TextStyle(
+                color: Color(0xffFFFFFF),
+                fontWeight: FontWeight.bold,
+                fontSize: 25
+              )
+            ),
           ),
           SizedBox(
             height: _game_size,
