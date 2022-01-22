@@ -399,7 +399,7 @@ class _GameState extends State<Game> {
 
     if (_correct) {
       // show the popup before moving to next round
-      String _solve_string = 'You have solved ' + _solved.length.toString() + 'puzzle';
+      String _solve_string = 'You have solved ' + _solved.length.toString() + ' puzzle';
       if (_solved.length != 1) {
         _solve_string += 's';
       }
@@ -573,7 +573,7 @@ class _GameState extends State<Game> {
           ),
           Container(
             alignment: Alignment.topCenter,
-            padding: EdgeInsets.fromLTRB(150.0, 10.0, 150.0, 0.0),
+            padding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
             child: Container(
               padding: EdgeInsets.fromLTRB(10.0, 15.0, 10.0, 15.0),
               decoration: BoxDecoration(
