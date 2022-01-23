@@ -26,7 +26,7 @@ A Flutter project for the flutter hack dev post challenge [ https://flutterhack.
 
 ### Demo & Code Walkthrough
 
-  - 
+  - https://www.youtube.com/watch?v=3W1dEKeMsTY
 
 ### How To Install & Run
 
