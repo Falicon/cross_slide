@@ -8,7 +8,6 @@ import 'package:cross_slide/models/config_settings.dart';
 /**********
 TODO
   - number the grid (for across/down help)
-  - timer (for speed solutions)
   - play sound on click (during animation)
 **********/
 
@@ -635,11 +634,13 @@ class _GameState extends State<Game> {
           ),
           Container(
             alignment: Alignment.topCenter,
+            padding: EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 0.0),
             child: Text(
               _clue,
               style: TextStyle(
                 color: _grey,
                 fontWeight: FontWeight.bold,
+                fontSize: 18
               )
             )
           ),
