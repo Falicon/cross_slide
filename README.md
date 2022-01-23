@@ -1,6 +1,6 @@
 # cross_slide
 
-A new Flutter project for the flutter hack dev post challenge.
+A Flutter project for the flutter hack dev post challenge [ https://flutterhack.devpost.com/ ].
 
 ## Slide Puzzle Idea
   - Pick a 3+ character word 
@@ -24,6 +24,18 @@ A new Flutter project for the flutter hack dev post challenge.
   - Solved puzzle has the word in the right column or row
     - rest of letters/puzzle can be in any order
 
+### Demo & Code Walkthrough
+
+  - 
+
+### How To Install & Run
+
+1. Install Flutter [ https://flutter.dev/ ]
+2. Clone this repo to your local system
+2. From the root folder of this project
+  A. for the web version simply run "flutter run"
+  B. for a mobilve version, launch a mobile emulator, then "flutter run"
+
 ### Game Options
   - How many can you solve
     - tradditional
@@ -31,6 +43,10 @@ A new Flutter project for the flutter hack dev post challenge.
     - each level makes it a bit harder
 
   - How fast can you solve a puzzle (timed mode)
+
+### TODO
+  - number the grid (for across/down help)
+  - play sound on click (during animation)
 
 ### Dev Resources/Inspiration
 
@@ -41,6 +57,10 @@ Flutter Hack Dev Post
 Sample Slide Puzzle:
 
   - https://github.com/VGVentures/slide_puzzle
+
+Wordle
+
+  - https://www.powerlanguage.co.uk/wordle/
 
 AnimatedPositioned
 

@@ -5,12 +5,6 @@ import 'package:flutter/material.dart';
 
 import 'package:cross_slide/models/config_settings.dart';
 
-/**********
-TODO
-  - number the grid (for across/down help)
-  - play sound on click (during animation)
-**********/
-
 // ########################################
 // GAME STATEFUL
 // ########################################
@@ -28,7 +22,6 @@ class _GameState extends State<Game> {
   // Set up the initial tiles 
   List _boxes = [];
   List _controls = [];
-
   List _empty_slot = [];
   List _solved = [];
 
@@ -52,14 +45,21 @@ class _GameState extends State<Game> {
   Map _letter_mappings = {};
   Map<String, dynamic> _words = words;
 
+  // define some colors we'll use throughout the game
   Color _black = Color(0xff000000);
   Color _grey = Color(0xff6c757d);
   Color _green = Color(0xff90EE90);
   Color _white = Color(0xffFFFFFF);
   Color _yellow = Color(0xffffffe0);
 
+  // prepare a timer we'll use to track seconds game is played
   Timer? _timer;
 
+  /****************************************
+  INIT STATE
+    - Buid our initial puzzle
+    - Start the game timer
+  ****************************************/
   @override
   void initState() {
     _build_puzzle();
@@ -70,6 +70,13 @@ class _GameState extends State<Game> {
 
   /****************************************
   BUILD PUZZLE
+    - Reset some game control variables & state
+    - Get a random word at the current level (no more words avail means game is complete)
+    - Set the initial position of the empty slot (last row/column combination)
+    - Determine the size of the game board and number of boxes this round (use the word length and box + padding sizes)
+    - Randomly decide if the solution should be in a row or a column (and which one in the grid)
+    - Build a two-dimensional list of box details with initial position, letter, and colors for each box (used for animation around the board)
+    - Build our two-dimenional control list (ids for boxes; used to track proper movement around the board)
   ****************************************/
   void _build_puzzle() {
     // make sure to clear out any pre-existing values
@@ -100,6 +107,7 @@ class _GameState extends State<Game> {
       // pick from the remaining list
       String _random_key = _keys.elementAt(new Random().nextInt(_keys.length));
 
+      // actually assign the word and clue for this round
       _word = _random_key.toUpperCase();
       _clue = _words[_random_key.toLowerCase()]['clue'];
 
@@ -116,14 +124,18 @@ class _GameState extends State<Game> {
       // determine if solution should be across or down (and in what slot)
       int _temp = new Random().nextInt(2);
       if (_temp == 0) {
+        // solution will be for ACROSS this round
         _solve_direction = 'across';
-        // pick a random row user needs to solve for (never last row b/c of empty space)
+        // pick a random row user needs to solve for (remember index lists start at 0)
         _solve_slot = new Random().nextInt(_row_count.toInt() - 1);
+        // format our clue to include the row number and Across information
         _clue = '\n' + (_solve_slot + 1).toString() + ' Accross: ' + _clue;
       } else {
+        // solution will be for DOWN this round
         _solve_direction = 'down';
-        // pick a random column user needs to solve for (never last column b/c of empty space)
+        // pick a random column user needs to solve for (remember index lists start at 0)
         _solve_slot = new Random().nextInt(_column_count.toInt() - 1);
+        // format our clue to include the column number and Down information
         _clue = '\n' + (_solve_slot + 1).toString() + ' Down: ' + _clue;
       }
       _clue += '\n';
@@ -217,9 +229,17 @@ class _GameState extends State<Game> {
 
   /****************************************
   CHANGE POSITION
+    - Get the current location of the box the user clicked on
+    - Ignore click if it's the empty box
+    - Ensure that the box clicked on is in a row or column with the empty space (ignore other clicks)
+    - Determine direction the box(es) need to move (left, right, up, or down)
+    - Determine how many boxes need to be moved
+    - Update our controls list with the new locations for each box
+    - Update the location of the empty slot
+    - Update the locations for each box in our animated list (triggers actual animation/visual movement)
   ****************************************/
   void _change_position(String _id) {
-    // now get the actual spot this id is currently in
+    // we know the id of the box the user clicked on, get the actual spot this id is currently in (within our controls list)
     int _row = 0;
     int _column = 0;
     for (var i = 0; i < _controls.length; i++) {
@@ -268,7 +288,7 @@ class _GameState extends State<Game> {
             // move boxes down (empty space up)
             _boxes_to_move *= -1;
             // we need to shift _column values down
-            num _slot = 0;
+            int _slot = 0;
             for (int i = 0; i < _controls.length; i++) {
               if (i >= _row && i <= _empty_slot[0]) {
                 if (_controls[i][_column] == '') {
@@ -286,7 +306,7 @@ class _GameState extends State<Game> {
             }
           } else {
             // we need to shift _column values up
-            num _slot = 0;
+            int _slot = 0;
             for (int i = 0; i < _controls.length; i++) {
               if (i <= _row && i >= _empty_slot[0]) {
                 if (_controls[i][_column] == '') {
@@ -336,6 +356,12 @@ class _GameState extends State<Game> {
 
   /****************************************
   CHECK SOLUTION
+    - Use our controls list to build words from rows or columns (depends on _solve_direction value)
+    - Check if any letters from the solution are in the right spot (or at a min in the right row/column)
+    - Turn boxes to correct colors (green, yellow, or white)
+    - If there is a match for the solution in the right spot
+      - pause the timer
+      - show an AlertDialog that puzzle was solved (clicking next will start the next round)
   ****************************************/
   void _check_solution() {
     bool _correct = false;
@@ -465,7 +491,7 @@ class _GameState extends State<Game> {
 
   /****************************************
   SHUFFLE BOXES
-    - Generate 50 random-ish clicks to mix up the puzzle
+    - Mimic random-ish clicks to mix up the puzzle
   ****************************************/
   void _shuffle_boxes() {
     for (var x = 0; x < 50; x++) {
@@ -497,6 +523,8 @@ class _GameState extends State<Game> {
 
   /****************************************
   START TIMER
+    - Start a timer for tracking seconds game is played
+    - Use boolean to determine if time should be counting or not
   ****************************************/
   void _start_timer() {
     const oneSec = const Duration(seconds: 1);
@@ -510,6 +538,8 @@ class _GameState extends State<Game> {
 
   /****************************************
   BUILD BOXES
+    - Build a widget list of AnimatedPosition boxes (what the user will actually see)
+    - If our _boxes list is empty, show a "game complete" message instead
   ****************************************/
   List<Widget> _buildBoxes() {
     List<AnimatedPositioned> _tiles = [];
@@ -620,8 +650,8 @@ class _GameState extends State<Game> {
         ]
       ),
       body: ListView(
-        // padding: const EdgeInsets.all(36),
         children: [
+          // Slide Puzzle Section
           Container(
             alignment: Alignment.topCenter,
             child: SizedBox(
@@ -632,6 +662,7 @@ class _GameState extends State<Game> {
               )
             )
           ),
+          // Clue Section
           Container(
             alignment: Alignment.topCenter,
             padding: EdgeInsets.fromLTRB(15.0, 0.0, 15.0, 0.0),
@@ -644,6 +675,7 @@ class _GameState extends State<Game> {
               )
             )
           ),
+          // Game Stats & How To Play Section
           Container(
             alignment: Alignment.topCenter,
             padding: EdgeInsets.fromLTRB(10.0, 0.0, 10.0, 15.0),
@@ -656,6 +688,7 @@ class _GameState extends State<Game> {
               ),
               child: Column(
                 children: [
+                  // Game Stats
                   Text.rich(
                     TextSpan(
                       children: [
@@ -670,6 +703,7 @@ class _GameState extends State<Game> {
                     ),
                     textAlign: TextAlign.center
                   ),
+                  // How to Play
                   Text.rich(
                     TextSpan(
                       children: [
