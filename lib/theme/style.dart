@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 
 ThemeData appTheme() {
   return ThemeData(
-    primaryColor: Colors.black,
-    scaffoldBackgroundColor: Colors.black,
+    primaryColor: Colors.white,
+    scaffoldBackgroundColor: Colors.white,
   );
 
 }

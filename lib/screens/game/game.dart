@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -6,19 +7,9 @@ import 'package:cross_slide/models/config_settings.dart';
 
 /**********
 TODO
-  - game over message
   - number the grid (for across/down help)
-
   - timer (for speed solutions)
-  - click count (for fewest clicks)
-
-  - fill boxes with letters not in solution (limit repeat letters)?
-
-  - Game stats below puzzle? (clicks; timer; level; list of solved)
   - play sound on click (during animation)
-
-  - settings?
-  - hints?
 **********/
 
 // ########################################
@@ -42,16 +33,18 @@ class _GameState extends State<Game> {
   List _empty_slot = [];
   List _solved = [];
 
-  int _animation_speed = 250;
-  int _level = 0;
-  int _solve_slot = 0;
+  bool _log_time = false;
 
-  int _box_size = 50;
-  int _padding = 5;
+  int _animation_speed = 250;
+  int _box_size = 75;
+  int _click_count = 0;
   int _column_count = 0;
   int _game_size = 400;
-
+  int _level = 0;
+  int _padding = 5;
   int _row_count = 0;
+  int _solve_slot = 0;
+  int _start = 0;
 
   String _word = '';
   String _clue = '';
@@ -60,9 +53,19 @@ class _GameState extends State<Game> {
   Map _letter_mappings = {};
   Map<String, dynamic> _words = words;
 
+  Color _black = Color(0xff000000);
+  Color _grey = Color(0xff6c757d);
+  Color _green = Color(0xff90EE90);
+  Color _white = Color(0xffFFFFFF);
+  Color _yellow = Color(0xffffffe0);
+
+  Timer? _timer;
+
   @override
   void initState() {
     _build_puzzle();
+    _log_time = true;
+    _start_timer();
     super.initState();
   }
 
@@ -75,6 +78,7 @@ class _GameState extends State<Game> {
     _controls = [];
     _word = '';
     _clue = '';
+    List _used_chars = [];
 
     // determine the current level (for every 5 solved puzzles we move up a level)
     if (_solved.length % 5 == 0) {
@@ -116,12 +120,12 @@ class _GameState extends State<Game> {
         _solve_direction = 'across';
         // pick a random row user needs to solve for (never last row b/c of empty space)
         _solve_slot = new Random().nextInt(_row_count.toInt() - 1);
-        _clue = (_solve_slot + 1).toString() + ' Accross: ' + _clue;
+        _clue = '\n' + (_solve_slot + 1).toString() + ' Accross: ' + _clue;
       } else {
         _solve_direction = 'down';
         // pick a random column user needs to solve for (never last column b/c of empty space)
         _solve_slot = new Random().nextInt(_column_count.toInt() - 1);
-        _clue = (_solve_slot + 1).toString() + ' Down: ' + _clue;
+        _clue = '\n' + (_solve_slot + 1).toString() + ' Down: ' + _clue;
       }
       _clue += '\n';
 
@@ -143,8 +147,8 @@ class _GameState extends State<Game> {
               'left': _left,
               'letter': _character.toUpperCase(),
               'id': _id.toString(),
-              'background': Color(0xffFFFFFF),
-              'foreground': Color(0xff000000)
+              'background': _white,
+              'foreground': _grey
             };
             _letter_mappings[_id.toString()] = _character.toUpperCase();
             _rec.add(_letter);
@@ -161,22 +165,30 @@ class _GameState extends State<Game> {
                 'left': _left,
                 'letter': '',
                 'id': '',
-                'background': Color(0xff000000),
-                'foreground': Color(0xff000000)
+                'background': _black,
+                'foreground': _black
               };
               _letter_mappings[''] = '';
             } else {
-              // generate a random letter
-              num _char_code = 65 + Random().nextInt(91 - 65);
-              var _char = new String.fromCharCode(_char_code.toInt());
+              // generate a random letter (ensure that letters from solution aren't repeated)
+              bool _char_avail = false;
+              String _char = '';
+              while (!_char_avail) {
+                num _char_code = 65 + Random().nextInt(91 - 65);
+                _char = new String.fromCharCode(_char_code.toInt());
+                if (!_word.contains(_char) && !_used_chars.contains(_char)) {
+                  _char_avail = true;
+                  _used_chars.add(_char);
+                }
+              }
               _id++;
               _letter = {
                 'top': _top,
                 'left': _left,
                 'letter': _char.toUpperCase(),
                 'id': _id.toString(),
-                'background': Color(0xffFFFFFF),
-                'foreground': Color(0xff000000)
+                'background': _white,
+                'foreground': _grey
               };
               _letter_mappings[_id.toString()] = _char.toUpperCase();
             }
@@ -383,14 +395,14 @@ class _GameState extends State<Game> {
         for (var x = 0; x < _boxes.length; x++) {
           for (var y = 0; y < _boxes[x].length; y++) {
             if (_boxes[x][y]['id'] == _controls[i][j] && _greens.contains(_controls[i][j])) {
-              _boxes[x][y]['background'] = Colors.green;
-              _boxes[x][y]['foreground'] = Colors.white;
+              _boxes[x][y]['background'] = _green;
+              _boxes[x][y]['foreground'] = _grey;
             } else if (_boxes[x][y]['id'] == _controls[i][j] && _yellows.contains(_controls[i][j])) {
-              _boxes[x][y]['background'] = Colors.yellow;
-              _boxes[x][y]['foreground'] = Colors.white;
+              _boxes[x][y]['background'] = _yellow;
+              _boxes[x][y]['foreground'] = _grey;
             } else if (_boxes[x][y]['id'] == _controls[i][j]) {
-              _boxes[x][y]['background'] = Colors.white;
-              _boxes[x][y]['foreground'] = Colors.black;
+              _boxes[x][y]['background'] = _white;
+              _boxes[x][y]['foreground'] = _grey;
             }
           }
         }
@@ -398,6 +410,7 @@ class _GameState extends State<Game> {
     }
 
     if (_correct) {
+      _log_time = false;
       // show the popup before moving to next round
       String _solve_string = 'You have solved ' + _solved.length.toString() + ' puzzle';
       if (_solved.length != 1) {
@@ -407,11 +420,11 @@ class _GameState extends State<Game> {
       showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
-          title: const Text(
+          title: Text(
             'PUZZLE SOLVED!',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: Color(0xff6c757d)
+              color: _grey
             )
           ),
           content: new Column(
@@ -425,7 +438,7 @@ class _GameState extends State<Game> {
                       text: _solve_string,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: Color(0xff6c757d)
+                        color: _grey
                       )
                     ),
                   ]
@@ -439,9 +452,10 @@ class _GameState extends State<Game> {
                 Navigator.of(context).pop();
                 // start a new round (with a new puzzle)
                 _build_puzzle();
+                _log_time = true;
                 setState(() {});
               },
-              textColor: Theme.of(context).primaryColor,
+              textColor: _grey,
               child: const Text('Next'),
             ),
           ],
@@ -483,6 +497,19 @@ class _GameState extends State<Game> {
   }
 
   /****************************************
+  START TIMER
+  ****************************************/
+  void _start_timer() {
+    const oneSec = const Duration(seconds: 1);
+    _timer = new Timer.periodic(oneSec, (Timer timer) {
+      if (_log_time) {
+        _start++;
+        setState(() {});
+      }
+    });
+  }
+
+  /****************************************
   BUILD BOXES
   ****************************************/
   List<Widget> _buildBoxes() {
@@ -506,12 +533,14 @@ class _GameState extends State<Game> {
                   ),
                   // color: _boxes[_row][_column]['background'],
                   decoration: BoxDecoration(
-                    border: Border.all(color: Color(0xff6c757d)),
-                    borderRadius: BorderRadius.circular(2),
+                    border: Border.all(color: _grey),
+                    borderRadius: BorderRadius.circular(10),
                     color: _boxes[_row][_column]['background']
                   ),
                 ),
                 onTap: () {
+                  // increment our click counter
+                  _click_count++;
                   // move the box to the proper spot
                   _change_position(_boxes[_row][_column]['id']);
                   // check if this solves the puzzle
@@ -525,7 +554,49 @@ class _GameState extends State<Game> {
         }
       }
     }
-    return _tiles;
+
+    if (_boxes.length == 0) {
+      // no puzzle to load; show the thank you message
+      _log_time = false;
+      return [
+        Container(
+          alignment: Alignment.topCenter,
+          padding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
+          child: Container(
+            padding: EdgeInsets.fromLTRB(10.0, 15.0, 10.0, 15.0),
+            decoration: BoxDecoration(
+              color: _green,
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+              border: Border.all(
+                width: 3,
+                color: _grey,
+                style: BorderStyle.solid
+              )
+            ),
+            child: Column(
+              children: [
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: "CONGRATULATIONS THE GAME IS COMPLETE!\n\nYou have solved all the puzzles available in this demo version of Cross Slide.\n\nIf you like what you've seen, please let @falicon know on Twitter!",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: _grey
+                        )
+                      ),
+                    ]
+                  ),
+                ),
+              ]
+            )
+          )
+        )
+      ];
+    } else {
+      return _tiles;
+    }
+
   }
 
   /****************************************
@@ -535,10 +606,13 @@ class _GameState extends State<Game> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('CROSSWORD SLIDE PUZZLE'),
+        backgroundColor: _white,
+        elevation: 0,
+        centerTitle: true,
+        title: Text('CROSSWORD SLIDE PUZZLE', style: TextStyle(color: _grey)),
         actions: [
           IconButton(
-            icon: Icon(Icons.info_outline_rounded, color: Color(0xff6c757d)),
+            icon: Icon(Icons.info_outline_rounded, color: _grey),
             iconSize: 40,
             onPressed: () async {
               Navigator.pushNamed(context, '/about');
@@ -547,25 +621,13 @@ class _GameState extends State<Game> {
         ]
       ),
       body: ListView(
-        padding: const EdgeInsets.all(36),
+        // padding: const EdgeInsets.all(36),
         children: [
-          Container(
-            alignment: Alignment.topCenter,
-            padding: const EdgeInsets.all(10),
-            child: Text(
-              _clue,
-              style: TextStyle(
-                color: Color(0xffFFFFFF),
-                fontWeight: FontWeight.bold,
-                fontSize: 18
-              )
-            )
-          ),
           Container(
             alignment: Alignment.topCenter,
             child: SizedBox(
               height: _game_size.toDouble(),
-              width: _game_size.toDouble(), //MediaQuery.of(context).size.width,
+              width: _game_size.toDouble(),
               child: Stack(
                 children: _buildBoxes()
               )
@@ -573,17 +635,23 @@ class _GameState extends State<Game> {
           ),
           Container(
             alignment: Alignment.topCenter,
-            padding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
+            child: Text(
+              _clue,
+              style: TextStyle(
+                color: _grey,
+                fontWeight: FontWeight.bold,
+              )
+            )
+          ),
+          Container(
+            alignment: Alignment.topCenter,
+            padding: EdgeInsets.fromLTRB(10.0, 0.0, 10.0, 15.0),
             child: Container(
-              padding: EdgeInsets.fromLTRB(10.0, 15.0, 10.0, 15.0),
+              padding: EdgeInsets.fromLTRB(10.0, 10.0, 10.0, 10.0),
               decoration: BoxDecoration(
-                color: Color(0xfffbfcc7),
+                color: _yellow,
                 borderRadius: BorderRadius.all(Radius.circular(10)),
-                border: Border.all(
-                  width: 3,
-                  color: Color(0xff6c757d),
-                  style: BorderStyle.solid
-                )
+                border: Border.all(color: _grey)
               ),
               child: Column(
                 children: [
@@ -591,16 +659,28 @@ class _GameState extends State<Game> {
                     TextSpan(
                       children: [
                         TextSpan(
-                          text: 'How To Play:\n\n1. Tap or Click a letter to slide boxes around the puzzle.\n\n2. Spell the word that is the answer to the clue given.\n\n3. Make sure it\'s in the right column or row as defined by the clue.\n\n4. Difficulty increases with very 5 puzzles you solve.\n\nNote: Green boxes are letters in the right spot, yellow boxes are letters in the answer, but in the wrong spot.',
+                          text: "LEVEL: " + _level.toString() + "    SOLVED: " + _solved.length.toString() + "    CLICKS: " + _click_count.toString() + "\n\nSECONDS PLAYED: " + _start.toString() + "\n",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Color(0xff6c757d),
-                            // fontSize: 25
+                            color: _grey
                           )
                         ),
                       ]
                     ),
-                    // textAlign: TextAlign.center
+                    textAlign: TextAlign.center
+                  ),
+                  Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                          text: "HOW TO PLAY:\n\n 1. Tap or Click a letter to slide boxes around the puzzle.\n\n2. Spell the word that is the answer to the clue given.\n\n3. Make sure it's in the right column or row as defined by the clue.\n\n4. Difficulty increases with very 5 puzzles you solve.\n\nNote: Green boxes are letters in the right spot, yellow boxes are letters in the answer, but in the wrong spot.\n\n",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: _grey
+                          )
+                        )
+                      ]
+                    ),
                   ),
                 ]
               )

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 
+import 'package:cross_slide/models/config_settings.dart';
+
 import 'package:url_launcher/url_launcher.dart';
 
 // ########################################
@@ -18,7 +20,11 @@ class About extends StatefulWidget {
 // ABOUT STATE
 // ########################################
 class _AboutState extends State<About> {
-  Color _background_color = Color(0xff6c757d);
+  Color _black = Color(0xff000000);
+  Color _grey = Color(0xff6c757d);
+  Color _green = Color(0xff90EE90);
+  Color _white = Color(0xffFFFFFF);
+  Color _yellow = Color(0xffffffe0);
 
   @override
   void initState() {
@@ -33,17 +39,17 @@ class _AboutState extends State<About> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: _background_color,
+        backgroundColor: _white,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+          icon: Icon(Icons.arrow_back_ios, color: _grey),
           onPressed: () => Navigator.pop(context)
         ),
-        title: Text('Cross Slide: The crossword slide puzzle game.', style: Theme.of(context).textTheme.headline6?.copyWith(color: Colors.white)),
+        title: Text('ABOUT CROSSWORD SLIDE', style: Theme.of(context).textTheme.headline6?.copyWith(color: _grey)),
       ),
-      backgroundColor: _background_color,
+      backgroundColor: _white,
       body: Container(
-        color: _background_color,
+        color: _white,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
@@ -53,19 +59,19 @@ class _AboutState extends State<About> {
                   children: <TextSpan>[
                     TextSpan(
                       text: 'Cross Slide is a simple crossword meets a slide puzzle game brought to you by Kevin Marshall of ',
-                      style: TextStyle(color: Colors.white)
+                      style: TextStyle(color: _grey)
                     ),
                     TextSpan(
                       text: 'Dig Down Labs LLC',
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+                      style: TextStyle(color: _black, fontWeight: FontWeight.bold)
                     ),
                     TextSpan(
                       text: '. For more information about the game and our other projects, please visit our website at ',
-                      style: TextStyle(color: Colors.white)
+                      style: TextStyle(color: _grey)
                     ),
                     TextSpan(
                       text: 'www.digdownlabs.com',
-                      style: TextStyle(color: Color(0xeeFFFF00)),
+                      style: TextStyle(color: _green),
                       recognizer: new TapGestureRecognizer()..onTap = () => launch('https://www.digdownlabs.com')
                     ),
                   ]
