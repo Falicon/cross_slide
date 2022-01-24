@@ -73,6 +73,7 @@ class _GameState extends State<Game> {
   ****************************************/
   @override
   void dispose() {
+    _timer?.cancel();
     super.dispose();
   }
 
