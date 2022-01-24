@@ -69,6 +69,14 @@ class _GameState extends State<Game> {
   }
 
   /****************************************
+  DISPOSE
+  ****************************************/
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  /****************************************
   BUILD PUZZLE
     - Reset some game control variables & state
     - Get a random word at the current level (no more words avail means game is complete)
@@ -129,14 +137,14 @@ class _GameState extends State<Game> {
         // pick a random row user needs to solve for (remember index lists start at 0)
         _solve_slot = new Random().nextInt(_row_count.toInt() - 1);
         // format our clue to include the row number and Across information
-        _clue = '\n' + (_solve_slot + 1).toString() + ' Accross: ' + _clue;
+        _clue = 'Across:\n' + (_solve_slot + 1).toString() + '.) ' + _clue;
       } else {
         // solution will be for DOWN this round
         _solve_direction = 'down';
         // pick a random column user needs to solve for (remember index lists start at 0)
         _solve_slot = new Random().nextInt(_column_count.toInt() - 1);
         // format our clue to include the column number and Down information
-        _clue = '\n' + (_solve_slot + 1).toString() + ' Down: ' + _clue;
+        _clue = 'Down:\n' + (_solve_slot + 1).toString() + '.) ' + _clue;
       }
       _clue += '\n';
 
@@ -671,7 +679,6 @@ class _GameState extends State<Game> {
               style: TextStyle(
                 color: _grey,
                 fontWeight: FontWeight.bold,
-                fontSize: 18
               )
             )
           ),
