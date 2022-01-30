@@ -3,7 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import 'package:cross_slide/models/config_settings.dart';
+import '/models/config_settings.dart';
 
 // ########################################
 // GAME STATEFUL

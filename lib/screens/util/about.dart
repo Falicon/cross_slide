@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 
-import 'package:cross_slide/models/config_settings.dart';
+import '/models/config_settings.dart';
 
 import 'package:url_launcher/url_launcher.dart';
 

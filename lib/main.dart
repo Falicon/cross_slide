@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 
-import 'package:cross_slide/screens/game/game.dart';
-import 'package:cross_slide/screens/util/about.dart';
-import 'package:cross_slide/theme/style.dart';
+import '/screens/game/game.dart';
+import '/screens/util/about.dart';
+import '/theme/style.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
