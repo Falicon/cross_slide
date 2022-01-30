@@ -24,7 +24,11 @@ A Flutter project for the flutter hack dev post challenge [ https://flutterhack.
   - Solved puzzle has the word in the right column or row
     - rest of letters/puzzle can be in any order
 
-### Demo & Code Walkthrough
+### Adding Puzzles
+
+Puzzles are defined in the lib/models/config_settings.dart file. Simply add puzzles to that file in the existing format (and then launch the app. Note: hot reload will not pick up changes to the config_settings file).
+
+### Demo Video
 
   - https://www.youtube.com/watch?v=3W1dEKeMsTY
 
@@ -44,9 +48,9 @@ A Flutter project for the flutter hack dev post challenge [ https://flutterhack.
 
   - How fast can you solve a puzzle (timed mode)
 
-### TODO
-  - number the grid (for across/down help)
-  - play sound on click (during animation)
+### Notes/Bugs
+
+There are a few small bugs and limitations to this version of cross_slide, but since this was built for a devpost challenge (and I want the code to match the demo video), I'm not going to release fixes or updates until the challenge is over (if at all).
 
 ### Dev Resources/Inspiration
 
