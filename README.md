@@ -32,6 +32,12 @@ Puzzles are defined in the lib/models/config_settings.dart file. Simply add puzz
 
   - https://www.youtube.com/watch?v=3W1dEKeMsTY
 
+### Play the Demo
+
+You should be able to play the web version of this demo here:
+
+ - https://falicon.github.io/cross_slide/build/web/#/
+
 ### How To Install & Run
 
 1. Install Flutter [ https://flutter.dev/ ]
