@@ -46,6 +46,12 @@ You should be able to play the web version of this demo here:
   A. for the web version simply run "flutter run"
   B. for a mobilve version, launch a mobile emulator, then "flutter run"
 
+### Code walk through
+
+I have put together a high level code walk through video here:
+
+  - https://youtu.be/y-8S5PhES1A
+
 ### Game Options
   - How many can you solve
     - tradditional
