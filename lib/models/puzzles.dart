@@ -1,4 +1,3 @@
-// GLOBAL CONFIGURATION VALUES
 Map<String, dynamic> words = {
   "sun": {"clue": "The Earth revolves around it.", "level": 1},
   "ant": {"clue": "A small insect, often found in a hill or colony.", "level": 1},

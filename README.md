@@ -26,7 +26,7 @@ A Flutter project for the flutter hack dev post challenge [ https://flutterhack.
 
 ### Adding Puzzles
 
-Puzzles are defined in the lib/models/config_settings.dart file. Simply add puzzles to that file in the existing format (and then launch the app. Note: hot reload will not pick up changes to the config_settings file).
+Puzzles are defined in the lib/models/puzzles.dart file. Simply add puzzles to that file in the existing format (and then launch the app. Note: hot reload will not pick up changes to the config_settings file).
 
 ### Demo Video
 

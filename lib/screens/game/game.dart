@@ -3,7 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '/models/config_settings.dart';
+import 'package:cross_slide/models/puzzles.dart';
 
 // ########################################
 // GAME STATEFUL
@@ -42,15 +42,11 @@ class _GameState extends State<Game> {
   String _clue = '';
   String _solve_direction = '';
 
+  Color? _yellow = Colors.yellow[200];
+  Color? _green = Colors.green[200];
+
   Map _letter_mappings = {};
   Map<String, dynamic> _words = words;
-
-  // define some colors we'll use throughout the game
-  Color _black = Color(0xff000000);
-  Color _grey = Color(0xff6c757d);
-  Color _green = Color(0xff90EE90);
-  Color _white = Color(0xffFFFFFF);
-  Color _yellow = Color(0xffffffe0);
 
   // prepare a timer we'll use to track seconds game is played
   Timer? _timer;
@@ -167,8 +163,8 @@ class _GameState extends State<Game> {
               'left': _left,
               'letter': _character.toUpperCase(),
               'id': _id.toString(),
-              'background': _white,
-              'foreground': _grey
+              'background': Colors.white,
+              'foreground': Colors.black
             };
             _letter_mappings[_id.toString()] = _character.toUpperCase();
             _rec.add(_letter);
@@ -185,8 +181,8 @@ class _GameState extends State<Game> {
                 'left': _left,
                 'letter': '',
                 'id': '',
-                'background': _black,
-                'foreground': _black
+                'background': Colors.black,
+                'foreground': Colors.black
               };
               _letter_mappings[''] = '';
             } else {
@@ -207,8 +203,8 @@ class _GameState extends State<Game> {
                 'left': _left,
                 'letter': _char.toUpperCase(),
                 'id': _id.toString(),
-                'background': _white,
-                'foreground': _grey
+                'background': Colors.white,
+                'foreground': Colors.black
               };
               _letter_mappings[_id.toString()] = _char.toUpperCase();
             }
@@ -430,13 +426,13 @@ class _GameState extends State<Game> {
           for (var y = 0; y < _boxes[x].length; y++) {
             if (_boxes[x][y]['id'] == _controls[i][j] && _greens.contains(_controls[i][j])) {
               _boxes[x][y]['background'] = _green;
-              _boxes[x][y]['foreground'] = _grey;
+              _boxes[x][y]['foreground'] = Colors.black;
             } else if (_boxes[x][y]['id'] == _controls[i][j] && _yellows.contains(_controls[i][j])) {
               _boxes[x][y]['background'] = _yellow;
-              _boxes[x][y]['foreground'] = _grey;
+              _boxes[x][y]['foreground'] = Colors.black;
             } else if (_boxes[x][y]['id'] == _controls[i][j]) {
-              _boxes[x][y]['background'] = _white;
-              _boxes[x][y]['foreground'] = _grey;
+              _boxes[x][y]['background'] = Colors.white;
+              _boxes[x][y]['foreground'] = Colors.black;
             }
           }
         }
@@ -458,7 +454,7 @@ class _GameState extends State<Game> {
             'PUZZLE SOLVED!',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: _grey
+              color: Colors.black
             )
           ),
           content: new Column(
@@ -472,7 +468,7 @@ class _GameState extends State<Game> {
                       text: _solve_string,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: _grey
+                        color: Colors.black
                       )
                     ),
                   ]
@@ -489,7 +485,7 @@ class _GameState extends State<Game> {
                 _log_time = true;
                 setState(() {});
               },
-              textColor: _grey,
+              textColor: Colors.black,
               child: const Text('Next'),
             ),
           ],
@@ -571,7 +567,7 @@ class _GameState extends State<Game> {
                   ),
                   // color: _boxes[_row][_column]['background'],
                   decoration: BoxDecoration(
-                    border: Border.all(color: _grey),
+                    border: Border.all(color: Colors.black),
                     borderRadius: BorderRadius.circular(10),
                     color: _boxes[_row][_column]['background']
                   ),
@@ -607,7 +603,7 @@ class _GameState extends State<Game> {
               borderRadius: BorderRadius.all(Radius.circular(10)),
               border: Border.all(
                 width: 3,
-                color: _grey,
+                color: Colors.black,
                 style: BorderStyle.solid
               )
             ),
@@ -620,7 +616,7 @@ class _GameState extends State<Game> {
                         text: "CONGRATULATIONS THE GAME IS COMPLETE!\n\nYou have solved all the puzzles available in this demo version of Cross Slide.\n\nIf you like what you've seen, please let @falicon know on Twitter!",
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: _grey
+                          color: Colors.black
                         )
                       ),
                     ]
@@ -644,13 +640,13 @@ class _GameState extends State<Game> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: _white,
+        backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        title: Text('CROSSWORD SLIDE PUZZLE', style: TextStyle(color: _grey)),
+        title: Text('CROSSWORD SLIDE PUZZLE', style: TextStyle(color: Colors.black)),
         actions: [
           IconButton(
-            icon: Icon(Icons.info_outline_rounded, color: _grey),
+            icon: Icon(Icons.info_outline_rounded, color: Colors.black),
             iconSize: 40,
             onPressed: () async {
               Navigator.pushNamed(context, '/about');
@@ -678,7 +674,7 @@ class _GameState extends State<Game> {
             child: Text(
               _clue,
               style: TextStyle(
-                color: _grey,
+                color: Colors.black,
                 fontWeight: FontWeight.bold,
               )
             )
@@ -692,7 +688,7 @@ class _GameState extends State<Game> {
               decoration: BoxDecoration(
                 color: _yellow,
                 borderRadius: BorderRadius.all(Radius.circular(10)),
-                border: Border.all(color: _grey)
+                border: Border.all(color: Colors.black)
               ),
               child: Column(
                 children: [
@@ -704,7 +700,7 @@ class _GameState extends State<Game> {
                           text: "LEVEL: " + _level.toString() + "    SOLVED: " + _solved.length.toString() + "    CLICKS: " + _click_count.toString() + "\n\nSECONDS PLAYED: " + _start.toString() + "\n",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: _grey
+                            color: Colors.black
                           )
                         ),
                       ]
@@ -719,7 +715,7 @@ class _GameState extends State<Game> {
                           text: "HOW TO PLAY:\n\n 1. Tap or Click a letter to slide boxes around the puzzle.\n\n2. Spell the word that is the answer to the clue given.\n\n3. Make sure it's in the right column or row as defined by the clue.\n\n4. Difficulty increases with very 5 puzzles you solve.\n\nNote: Green boxes are letters in the right spot, yellow boxes are letters in the answer, but in the wrong spot.\n\n",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: _grey
+                            color: Colors.black
                           )
                         )
                       ]
