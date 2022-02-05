@@ -34,7 +34,7 @@ Puzzles are defined in the lib/models/puzzles.dart file. Simply add puzzles to t
 
 ### Play the Demo
 
-You should be able to play the web version of this demo here:
+You should be able to play the web version of this demo here (note it may take a second or two to load, so please be patient):
 
  - https://falicon.github.io/cross_slide/build/web/#/
 
